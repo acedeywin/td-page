@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+  <head>
+    <meta charset="utf-8">
+    <title>WebGL tutorial</title>
+
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=ZCOOL+QingKe+HuangYou" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+  </head>
+
+  <body>
+    <nav id="navbar">
+      <header id="main-head">Web Graphics Library</header>
+
+        <p><a href="#Getting_started_with_WebGL" class="nav-link">Getting started with WebGL
+</a></p>
+
+        <p><a href="#Adding_2D_content_to_a_WebGL_context" class="nav-link">Adding 2D content to a WebGL context
+</a></p>
+
+        <p><a href="#Using_shaders_to_apply_color_in_WebGL" class="nav-link">Using shaders to apply color in WebGL
+</a></p>
+
+        <p><a href="#Animating_objects_with_WebGL" class="nav-link">Animating objects with WebGL</a></p>
+
+        <p><a href="#Creating_3D_objects_using_WebGL" class="nav-link">Creating 3D objects using WebGL
+</a></p>
+
+        <p><a href="#Using_textures_in_WebGL" class="nav-link">Using textures in WebGL</a></p>
+
+        <p><a href="#Lighting_in_WebGL" class="nav-link">Lighting in WebGL</a></p>
+
+        <p><a href="#Animating_textures_in_WebGL" class="nav-link">Animating textures in WebGL</a></p>
+
+        <footer >
+          <a href="https://www.github.com/acedeywin" target="_blank" class="social"><i class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/stevon04" target="_blank" class="social"><i class="fab fa-linkedin" ></i></a>
+        </footer>
+    </nav>
+
+    <main id="main-doc">
+
+      <section class="main-section" id="Getting_started_with_WebGL">
+        <header>Getting started with WebGL</header>
+
+        <p>WebGL enables web content to use an API based on OpenGL ES 2.0 to perform 2D and 3D rendering in an HTML canvas in browsers that support it without the use of plug-ins. WebGL programs consist of control code written in JavaScript and shader code (GLSL) that is executed on a computer's Graphics Processing Unit (GPU). WebGL elements can be mixed with other HTML elements and composited with other parts of the page or page background.</p>
+
+        <h3>Preparing to render in 3D</h3>
+        <p>The first thing you need in order to use WebGL for rendering is a canvas. The HTML fragment below declares a canvas that our sample will draw into.</p>
+
+        <p>The <code class="min-code">main()</code> function in our JavaScript code, is called when our script is loaded. Its purpose is to set up the WebGL context and start rendering content.</p>
+
+        <code class="code">alize the GL context
+          const gl = canvas.getContext("webgl");
+
+          // Only continue if WebGL is available and working
+          if (gl === null) {
+            alert("Unable to initialize WebGL. Your browser or machine may not support it.");
+            return;
+          }
+
+          // Set clear color to black, fully opaque
+          gl.clearColor(0.0, 0.0, 0.0, 1.0);
+          // Clear the color buffer with specified clear color
+          gl.clear(gl.COLOR_BUFFER_BIT);</code>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+
+      </section>
+        <hr>
+      <section class="main-section" id="Adding_2D_content_to_a_WebGL_context">
+        <header>Adding 2D content to a WebGL context
+</header>
+
+        <p>Once you've successfully created a WebGL context, you can start rendering into it. A simple thing we can do is draw a simple square untextured plane, so let's start there, by building code to draw a square plane.</p>
+
+        <h3>Drawing the scene</h3>
+        <p>The most important thing to understand before we get started is that even though we're only rendering a square plane object in this example, we're still drawing in 3D space. It's just we're drawing a square and we're putting it directly in front of the camera perpendicular to the view direction. We need to define the shaders that will create the color for our simple scene as well as draw our object. These will establish how the square plane appears on the screen.</p>
+
+        <h3>The shaders</h3>
+        <p>A shader is a program, written using the OpenGL ES Shading Language (GLSL), that takes information about the vertices that make up a shape and generates the data needed to render the pixels onto the screen: namely, the positions of the pixels and their colors.</p>
+
+        <p>There are two shader functions run when drawing WebGL content: the vertex shader and the fragment shader. You write these in GLSL and pass the text of the code into WebGL to be compiled for execution on the GPU. Together, a set of vertex and fragment shaders is called a shader program.</p>
+
+        <p>A vertex program would look like this</p>
+
+        <code class="code">/ Vertex shader program
+
+          const vsSource = `
+          attribute vec4 aVertexPosition;
+
+          uniform mat4 uModelViewMatrix;
+          uniform mat4 uProjectionMatrix;
+
+          void main() {
+          gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+        }
+        `;</code>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Adding_2D_content_to_a_WebGL_context" target="_blank">MDN tutorial</a> on WebGL</li>
+
+      </section>
+      <hr>
+      <section class="main-section" id="Using_shaders_to_apply_color_in_WebGL">
+        <header>Using shaders to apply color in WebGL</header>
+
+        <p>Having created a square plane, the next obvious step is to add a splash of color to it. We can do this by revising the shaders.</p>
+
+        <h3>Applying color to the vertices</h3>
+
+        <p>In WebGL, objects are built using sets of vertices, each of which has a position and a color; by default, all other pixels' colors (and all its other attributes, including position) are computed using interpolation, automatically creating smooth gradients. Previously, our vertex shader didn't apply any specific colors to the vertices; between this and the fragment shader assigning the fixed color of white to each pixel, the entire square was rendered as solid white.</p>
+
+        <p>Let's say we want to render a gradient in which each corner of the square is a different color: red, blue, green, and white. The first thing to do is to establish these colors for the four vertices. To do this, we first need to create an array of vertex colors, then store it into a WebGL buffer; we'll do that by adding the following code to our <code class="min-code">initBuffers()</code> function:</p>
+        <code class="code">initBuffers(){
+          const colors = [
+          1.0,  1.0,  1.0,  1.0,    // white
+          1.0,  0.0,  0.0,  1.0,    // red
+          0.0,  1.0,  0.0,  1.0,    // green
+          0.0,  0.0,  1.0,  1.0,    // blue
+          ];
+
+          const colorBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+          return {
+            position: positionBuffer,
+            color: colorBuffer,
+        };
+      }</code>
+
+      <p>This code starts by creating a JavaScript array containing four 4-value vectors, one for each vertices' color. Then a new WebGL buffer is allocated to store these colors, and the array is converted into floats and stored into the buffer.</p>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_shaders_to_apply_color_in_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+
+      </section>
+      <hr>
+
+      <section class="main-section" id="Animating_objects_with_WebGL">
+        <header>Animating objects with WebGL</header>
+
+        <h3>Making the square rotate</h3>
+
+        <p>Let's start by making the square rotate. The first thing we'll need is a variable in which to track the current rotation of the square:</p>
+
+        <code class="min-code">var squareRotation = 0.0;</code>
+
+        <p>Now we need to update the drawScene() function to apply the current rotation to the square when drawing it. After translating to the initial drawing position for the square, we apply the rotation like this:</p>
+
+        <code class="code">mat4.rotate(modelViewMatrix,  // destination matrix
+              modelViewMatrix,  // matrix to rotate
+              squareRotation,   // amount to rotate in radians
+              [0, 0, 1]);
+        </code>
+
+        <p>This rotates the modelViewMatrix by the current value of squareRotation, around the Z axis.</p>
+
+        <p>To actually animate, we need to add code that changes the value of squareRotation over time. We can do that by creating a new variable to track the time at which we last animated (let's call it then), then adding the following code to the end of the main function</p>
+
+        <code class="code">var then = 0;
+
+          // Draw the scene repeatedly
+          function render(now) {
+            now *= 0.001;  // convert to seconds
+            const deltaTime = now - then;
+            then = now;
+
+            drawScene(gl, programInfo, buffers, deltaTime);
+
+            requestAnimationFrame(render);
+          }
+          requestAnimationFrame(render);
+        </code>
+
+        <p>This code uses requestAnimationFrame to ask the browser call the function "render" each frame. requestAnimationFrame passes us the time in milliseconds since the page loaded. We convert that to seconds and then subtract from it the last time to compute deltaTime which is the number of second since the last frame was rendered. At the end of drawscene we add the code to update squareRotation.</p>
+
+        <code class="min-code">squareRotation += deltaTime;</code>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Animating_objects_with_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+      </section>
+      <hr>
+
+      <section class="main-section" id="Creating_3D_objects_using_WebGL">
+        <header>Creating 3D objects using WebGL</header>
+
+        <p>Let's take our square plane into three dimensions by adding five more faces to create a cube. To do this efficiently, we're going to switch from drawing using the vertices directly by calling the <code class="min-code">gl.drawArrays()</code> method to using the vertex array as a table, and referencing individual vertices in that table to define the positions of each face's vertices, by calling <code class="min-code">gl.drawElements()</code>.</p>
+
+        <p>Consider: each face requires four vertices to define it, but each vertex is shared by three faces. We can pass a lot fewer data around by building an array of all 24 vertices, then referring to each vertex by its index into that array instead of moving entire sets of coordinates around. If you wonder why we need 24 vertices, and not just 8, it is because each corner belongs to three faces of different colours, and a single vertex needs to have a single specific colour - therefore we will create three copies of each vertex in three different colours, one for each face.</p>
+
+        <h3>Define the positions of the cube's vertices</h3>
+
+        <p>First, let's build the cube's vertex position buffer by updating the code in initBuffers(). This is pretty much the same as it was for the square plane, but somewhat longer since there are 24 vertices (4 per side).</p>
+
+        <p>Since we've added a z-component to our vertices, we need to update the numComponents of our vertexPosition attribute to 3.</p>
+
+        <code class="code">// Tell WebGL how to pull out the positions from the position
+          // buffer into the vertexPosition attribute
+          {
+            const numComponents = 3;
+            ...
+            gl.vertexAttribPointer(
+            programInfo.attribLocations.vertexPosition,
+            numComponents,
+            type,
+            normalize,
+            stride,
+            offset);
+            gl.enableVertexAttribArray(
+            programInfo.attribLocations.vertexPosition);
+          }
+        </code>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Creating_3D_objects_using_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+
+      </section>
+      <hr>
+
+      <section class="main-section" id="Using_textures_in_WebGL">
+        <header>Using textures in WebGL</header>
+
+        <p>Now that our sample program has a rotating 3D cube, let's map a texture onto it instead of having its faces be solid colors.</p>
+
+        <h3>Loading textures</h3>
+
+        <p>The first thing to do is add code to load the textures. In our case, we'll be using a single texture, mapped onto all six sides of our rotating cube, but the same technique can be used for any number of textures.</p>
+
+        <p>The <code class="min-code">loadTexture()</code> routine starts by creating a WebGL texture object texture by calling the WebGL <code class="min-code">createTexture()</code> function. It then uploads a single blue pixel using <code class="min-code">texImage2D()</code>. This makes the texture immediately usable as a solid blue color even though it may take a few moments for our image to download.</p>
+
+        <p>To load the texture from the image file, it then creates an Image object and assigned the src to the url for our image we wish to use as our texture. The function we assign to image.onload will be called once the image has finished downloading. At that point we again call <code class="min-code">texImage2D()</code> this time using the image as the source for the texture. After that we setup filtering and wrapping for the texture based on whether or not the image we download was a power of 2 in both dimensions or not.</p>
+
+        <p>WebGL1 can only use non power of 2 textures with filtering set to NEAREST or LINEAR and it can not generate a mipmap for them. Their wrapping mode must also be set to CLAMP_TO_EDGE. On the other hand if the texture is a power of 2 in both dimensions then WebGL can do higher quality filtering, it can use mipmap, and it can set the wrapping mode to REPEAT or MIRRORED_REPEAT.</p>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+
+      </section>
+      <hr>
+
+      <section class="main-section" id="Lighting_in_WebGL">
+        <header>Lighting in WebGL</header>
+
+        <p>As should be clear by now, WebGL doesn't have much built-in knowledge. It just runs two functions you supply — a vertex shader and a fragment shader — and expects you to write creative functions to get the results you want. In other words, if you want lighting you have to calculate it yourself. Fortunately, it's not all that hard to do, and this article will cover some of the basics.</p>
+
+        <h3>Simulating lighting and shading in 3D</h3>
+
+        <p>Although going into detail about the theory behind simulated lighting in 3D graphics is far beyond the scope of this article, it's helpful to know a bit about how it works. Instead of discussing it in depth here, take a look at the article on Phong shading at Wikipedia, which provides a good overview of the most commonly used lighting model.</p>
+
+        <p>There are three basic types of lighting:</p>
+
+        <ul>
+          <li><b>Ambient light</b> is the light that permeates the scene; it's non-directional and affects every face in the scene equally, regardless of which direction it's facing.</li>
+
+          <li><b>Directional light</b> is light that is emitted from a specific direction. This is light that's coming from so far away that every photon is moving parallel to every other photon. Sunlight, for example, is considered directional light.</li>
+
+          <li><b>Point light</b> is light that is being emitted from a point, radiating in all directions. This is how many real-world light sources usually work. A light bulb emits light in all directions, for example.</li>
+        </ul>
+
+        <p>For our purposes, we're going to simplify the lighting model by only considering simple directional and ambient lighting; we won't have any specular highlights or point light sources in this scene. Instead, we'll have our ambient lighting plus a single directional light source, aimed at the rotating cube from the previous demo.</p>
+
+        <p>Once you drop out the concept of point sources and specular lighting, there are two pieces of information we'll need in order to implement our directional lighting:</p>
+
+        <ol>
+          <li>We need to associate a <b>surface normal</b> with each vertex. This is a vector that's perpendicular to the face at that vertex.</li>
+
+          <li>We need to know the direction in which the light is traveling; this is defined by the <b>direction vector</b>.</li>
+        </ol>
+
+        <p>Then we update the vertex shader to adjust the color of each vertex, taking into account the ambient lighting as well as the effect of the directional lighting given the angle at which it's striking the face. We'll see how to do that when we look at the code for the shader.</p>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Lighting_in_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+
+      </section>
+      <hr>
+
+      <section class="main-section" id="Animating_textures_in_WebGL">
+        <header>Animating textures in WebGL</header>
+
+        <p>In this demonstration, we build upon the previous example by replacing our static textures with the frames of an mp4 video file that's playing. This is actually pretty easy to do and fun to watch, so let's get started. You can use similar code to use any sort of data (such as a <code class="min-code">canvas</code>) as the source for your textures.</p>
+
+        <h3>Getting access to the video</h3>
+
+        <p>The first step is to create the <code class="min-code">video</code> element that we'll use to retrieve the video frames:</p>
+
+        <code class="code">// will set to true when video can be copied to texture
+          var copyVideo = false;
+
+          function setupVideo(url) {
+          const video = document.createElement('video');
+
+          var playing = false;
+          var timeupdate = false;
+
+          video.autoplay = true;
+          video.muted = true;
+          video.loop = true;
+
+          // Waiting for these 2 events ensures
+          // there is data in the video
+
+          video.addEventListener('playing', function() {
+            playing = true;
+            checkReady();
+          }, true);
+
+          video.addEventListener('timeupdate', function() {
+            timeupdate = true;
+            checkReady();
+          }, true);
+
+          video.src = url;
+          video.play();
+
+          function checkReady() {
+            if (playing && timeupdate) {
+              copyVideo = true;
+            }
+          }
+
+  return video;
+}</code>
+
+<p>First we create a video element. We set it to autoplay, mute the sound, and loop the video. We then set up two events to make sure the video is playing and the time has been updated. We need both of these checks because it will produce an error if you upload a video to WebGL that has no data available yet. Checking for both of these events guarantees there is data available and it's safe to start uploading video to a WebGL texture. In the code above, we confirm whether we got both of those events; if so, we set a global variable, <code class="min-code">copyVideo</code>, to true to indicate that it's safe to start copying the video to a texture.</p>
+
+        <li>For more, visit <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Animating_textures_in_WebGL" target="_blank">MDN tutorial</a> on WebGL</li>
+      </section>
+    </main>
+
+  </body>
+</html>
